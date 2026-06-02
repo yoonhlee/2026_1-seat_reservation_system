@@ -6,6 +6,7 @@ list                      - List all seats
 reserve <seat_id> <name>  - Reserve a seat
 cancel <seat_id> [name]   - Cancel a reservation
 status <seat_id>          - Show seat status
+search <name>             - Search seats reserved by name
 stats                     - Show summary stats
 help                      - Show this help
 exit                      - Exit the program"""
@@ -48,6 +49,18 @@ def run_cli():
                 _require_args(command, args, 1)
                 seat_id, name = store.status(int(args[0]))
                 _print_seat(seat_id, name)
+            elif command == "search":
+                _require_args(command, args, 1)
+                results = [
+                    (seat_id, name)
+                    for seat_id, name in store.list_seats()
+                    if name and args[0].lower() == name.lower()
+                ]
+                if results:
+                    for seat_id, name in results:
+                        _print_seat(seat_id, name)
+                else:
+                    print(f"No reservations found for '{args[0]}'.")
             elif command == "stats":
                 stats = store.stats()
                 print(
