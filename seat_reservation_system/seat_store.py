@@ -1,6 +1,7 @@
 class SeatStore:
     def __init__(self, seat_ids):
         self._seats = {seat_id: None for seat_id in seat_ids}
+        self._notes: dict = {}
 
     def list_seats(self):
         return self._seats.items()
@@ -19,6 +20,7 @@ class SeatStore:
         if name and current != name:
             raise ValueError("Name does not match the reservation.")
         self._seats[seat_id] = None
+        self._notes.pop(seat_id, None)
         return seat_id, None
 
     def status(self, seat_id):
@@ -28,6 +30,16 @@ class SeatStore:
         reserved = sum(1 for name in self._seats.values() if name)
         total = len(self._seats)
         return {"total": total, "reserved": reserved, "available": total - reserved}
+
+    def set_note(self, seat_id, note: str):
+        if self._get(seat_id) is None:
+            raise ValueError("Cannot add a note to an unreserved seat.")
+        self._notes[seat_id] = note
+        return seat_id, note
+
+    def get_note(self, seat_id) -> str | None:
+        self._get(seat_id)
+        return self._notes.get(seat_id)
 
     def _get(self, seat_id):
         if seat_id not in self._seats:

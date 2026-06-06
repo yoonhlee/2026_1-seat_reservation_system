@@ -7,6 +7,7 @@ reserve <seat_id> <name>  - Reserve a seat
 cancel <seat_id> [name]   - Cancel a reservation
 status <seat_id>          - Show seat status
 search <name>             - Search seats reserved by name
+note <seat_id> [text]     - View or set a note on a reserved seat
 stats                     - Show summary stats
 help                      - Show this help
 exit                      - Exit the program"""
@@ -48,7 +49,21 @@ def run_cli():
             elif command == "status":
                 _require_args(command, args, 1)
                 seat_id, name = store.status(int(args[0]))
-                _print_seat(seat_id, name)
+                note = store.get_note(seat_id)
+                _print_seat(seat_id, name, note)
+            elif command == "note":
+                _require_args(command, args, 1)
+                seat_id = int(args[0])
+                if len(args) >= 2:
+                    note_text = " ".join(args[1:])
+                    seat_id, note = store.set_note(seat_id, note_text)
+                    print(f"Seat {seat_id}: note set to '{note}'")
+                else:
+                    note = store.get_note(seat_id)
+                    if note:
+                        print(f"Seat {seat_id}: note - {note}")
+                    else:
+                        print(f"Seat {seat_id}: no note.")
             elif command == "search":
                 _require_args(command, args, 1)
                 results = [
@@ -74,8 +89,10 @@ def run_cli():
             print(f"Error: {exc}")
 
 
-def _print_seat(seat_id, name):
+def _print_seat(seat_id, name, note=None):
     label = f"reserved by {name}" if name else "available"
+    if note and name:
+        label += f" [{note}]"
     print(f"Seat {seat_id}: {label}")
 
 
